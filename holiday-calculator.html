@@ -180,25 +180,32 @@
 
         function initializeDateInputs() {
             const now = new Date();
-            const startOfYear = new Date(now.getFullYear(), 0, 1);
-            const endOfYear = new Date(now.getFullYear(), 11, 31);
+
+            // Provide a reasonable multi-year selectable range so mobile pickers
+            // (including Android's native date picker) can choose dates outside
+            // the current calendar year.
+            const rangeStart = new Date(now.getFullYear() - 5, 0, 1);
+            const rangeEnd = new Date(now.getFullYear() + 5, 11, 31);
 
             const startDateInput = document.getElementById('startDate');
             const endDateInput = document.getElementById('endDate');
 
-            // Ensure the inputs cannot pick dates outside the current year
-            startDateInput.min = formatDate(startOfYear);
-            startDateInput.max = formatDate(endOfYear);
-            endDateInput.min = formatDate(startOfYear);
-            endDateInput.max = formatDate(endOfYear);
+            // Allow selection across multiple years rather than restricting to the current year
+            startDateInput.min = formatDate(rangeStart);
+            startDateInput.max = formatDate(rangeEnd);
+            endDateInput.min = formatDate(rangeStart);
+            endDateInput.max = formatDate(rangeEnd);
 
-            // Default values: use start of year and end of year (user can change)
-            startDateInput.valueAsDate = startOfYear;
-            endDateInput.valueAsDate = endOfYear;
+            // Default values: start at today and default end to ~1 year from today
+            const defaultStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            const defaultEnd = new Date(now.getFullYear() + 1, now.getMonth(), now.getDate());
 
-            state.startDate = startOfYear;
-            state.endDate = endOfYear;
-            state.currentDate = new Date(startOfYear);
+            startDateInput.valueAsDate = defaultStart;
+            endDateInput.valueAsDate = defaultEnd;
+
+            state.startDate = defaultStart;
+            state.endDate = defaultEnd;
+            state.currentDate = new Date(defaultStart);
         }
 
         async function fetchBankHolidays() {
