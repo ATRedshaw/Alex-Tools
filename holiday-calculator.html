@@ -14,11 +14,43 @@
         }
         input[type="number"] {
             -moz-appearance: textfield;
+            appearance: textfield;
         }
         input[type="number"]::-webkit-outer-spin-button,
         input[type="number"]::-webkit-inner-spin-button {
             -webkit-appearance: none;
             margin: 0;
+        }
+        /* Responsive tweaks for calendar navigation and day cells */
+        @media (max-width: 640px) {
+            /* Make nav buttons compact and circular on small screens */
+            .nav-btn {
+                width: 40px;
+                height: 40px;
+                padding: 0;
+                border-radius: 9999px; /* full */
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+            }
+
+            /* Show only arrow on very small screens; full text remains on sm+ (handled in markup) */
+            #currentMonth {
+                font-size: 1.125rem; /* text-lg */
+            }
+
+            /* Slightly tighter grid spacing so day cells remain usable */
+            #calendar {
+                gap: 6px;
+            }
+
+            /* Make calendar day cells slightly smaller text and better touch target */
+            .calendar-day {
+                font-size: 0.9rem;
+                border-width: 1px;
+                padding: 6px;
+            }
         }
     </style>
 </head>
@@ -66,6 +98,9 @@
                                 <span class="text-sm font-medium text-gray-700">Show UK Bank Holidays</span>
                             </label>
                         </div>
+                        <div class="pt-2">
+                            <button id="clearSaved" class="w-full px-3 py-2 bg-white border border-red-200 text-red-600 rounded-lg hover:bg-red-50">Clear saved data</button>
+                        </div>
                     </div>
                 </div>
 
@@ -108,13 +143,15 @@
 
             <div class="lg:col-span-3">
                 <div class="p-6 bg-gray-50 rounded-lg border">
-                    <div class="flex justify-between items-center mb-6">
-                        <button id="prevMonth" class="px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-100 transition font-medium text-gray-700 shadow-sm">
-                            ← Previous
+                    <div class="flex justify-between items-center mb-6 gap-4">
+                        <button id="prevMonth" class="nav-btn px-0 sm:px-4 py-2 bg-white border border-gray-300 rounded-full sm:rounded-lg hover:bg-gray-100 transition font-medium text-gray-700 shadow-sm" aria-label="Previous month">
+                            <span class="inline sm:hidden text-base">←</span>
+                            <span class="hidden sm:inline">← Previous</span>
                         </button>
-                        <h2 id="currentMonth" class="text-2xl font-bold text-gray-800"></h2>
-                        <button id="nextMonth" class="px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-100 transition font-medium text-gray-700 shadow-sm">
-                            Next →
+                        <h2 id="currentMonth" class="text-lg sm:text-2xl font-bold text-gray-800 text-center flex-1"></h2>
+                        <button id="nextMonth" class="nav-btn px-0 sm:px-4 py-2 bg-white border border-gray-300 rounded-full sm:rounded-lg hover:bg-gray-100 transition font-medium text-gray-700 shadow-sm" aria-label="Next month">
+                            <span class="inline sm:hidden text-base">→</span>
+                            <span class="hidden sm:inline">Next →</span>
                         </button>
                     </div>
                     <div id="calendar" class="grid grid-cols-7 gap-2"></div>
@@ -133,6 +170,13 @@
             bankHolidays: [],
             showBankHolidays: true
         };
+
+        function formatDate(date) {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
 
         function initializeDateInputs() {
             const now = new Date();
@@ -154,18 +198,19 @@
 
             state.startDate = startOfYear;
             state.endDate = endOfYear;
+            state.currentDate = new Date(startOfYear);
         }
 
         async function fetchBankHolidays() {
             try {
                 const response = await fetch('https://www.gov.uk/bank-holidays.json');
                 const data = await response.json();
-                
+
                 const holidays = data['england-and-wales'].events.map(event => ({
                     date: new Date(event.date + 'T00:00:00'),
                     title: event.title
                 }));
-                
+
                 state.bankHolidays = holidays;
                 return holidays;
             } catch (error) {
@@ -176,7 +221,6 @@
 
         function isBankHoliday(date) {
             if (!state.showBankHolidays) return null;
-            
             const dateStr = formatDate(date);
             return state.bankHolidays.find(bh => formatDate(bh.date) === dateStr);
         }
@@ -190,40 +234,33 @@
             return state.plannedHolidays.has(formatDate(date));
         }
 
-        function formatDate(date) {
-            const year = date.getFullYear();
-            const month = String(date.getMonth() + 1).padStart(2, '0');
-            const day = String(date.getDate()).padStart(2, '0');
-            return `${year}-${month}-${day}`;
-        }
-
         function toggleHoliday(date) {
             const dateStr = formatDate(date);
-            
             if (isWeekend(date) || (isBankHoliday(date) && !isPlannedHoliday(date))) {
                 return;
             }
-            
+
             if (state.plannedHolidays.has(dateStr)) {
                 state.plannedHolidays.delete(dateStr);
             } else {
                 state.plannedHolidays.add(dateStr);
             }
-            
+
             renderCalendar();
             updateSummary();
+            saveStateToStorage();
         }
 
         function renderCalendar() {
             const calendar = document.getElementById('calendar');
             calendar.innerHTML = '';
-            
+
             const year = state.currentDate.getFullYear();
             const month = state.currentDate.getMonth();
-            
-            document.getElementById('currentMonth').textContent = 
+
+            document.getElementById('currentMonth').textContent =
                 state.currentDate.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' });
-            
+
             const dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
             dayNames.forEach(day => {
                 const header = document.createElement('div');
@@ -231,17 +268,17 @@
                 header.textContent = day;
                 calendar.appendChild(header);
             });
-            
+
             const firstDay = new Date(year, month, 1);
             let dayOffset = firstDay.getDay() - 1;
             if (dayOffset === -1) dayOffset = 6;
-            
+
             for (let i = 0; i < dayOffset; i++) {
                 calendar.appendChild(document.createElement('div'));
             }
-            
+
             const daysInMonth = new Date(year, month + 1, 0).getDate();
-            
+
             for (let day = 1; day <= daysInMonth; day++) {
                 const date = new Date(year, month, day);
                 const cell = createDayCell(date);
@@ -254,15 +291,16 @@
             const isWeekendDay = isWeekend(date);
             const bankHoliday = isBankHoliday(date);
             const isPlanned = isPlannedHoliday(date);
+
             // Compare only the date parts (YYYY-MM-DD) to avoid timezone/time component issues
             let isInRange = true;
             if (state.startDate && state.endDate) {
                 const d = formatDate(date);
                 isInRange = d >= formatDate(state.startDate) && d <= formatDate(state.endDate);
             }
-            
-            cell.className = 'aspect-square flex flex-col items-center justify-center text-sm border-2 rounded-lg cursor-pointer transition-all duration-200 relative';
-            
+
+            cell.className = 'calendar-day aspect-square flex flex-col items-center justify-center text-sm border-2 rounded-lg cursor-pointer transition-all duration-200 relative';
+
             if (!isInRange) {
                 cell.className += ' bg-gray-100 border-gray-200 text-gray-400 cursor-not-allowed';
             } else if (isPlanned) {
@@ -274,12 +312,12 @@
             } else {
                 cell.className += ' bg-white border-gray-300 hover:bg-blue-50 hover:border-blue-400 shadow-sm';
             }
-            
+
             const dayNumber = document.createElement('div');
             dayNumber.className = 'font-semibold text-base';
             dayNumber.textContent = date.getDate();
             cell.appendChild(dayNumber);
-            
+
             if (bankHoliday) {
                 const indicator = document.createElement('div');
                 indicator.className = 'text-xs font-bold mt-1';
@@ -287,11 +325,11 @@
                 indicator.title = bankHoliday.title;
                 cell.appendChild(indicator);
             }
-            
+
             if (isInRange) {
                 cell.addEventListener('click', () => toggleHoliday(date));
             }
-            
+
             return cell;
         }
 
@@ -311,6 +349,82 @@
             document.getElementById('remainingDays').textContent = (state.holidayAllowance - state.plannedHolidays.size) + ' days';
         }
 
+        // Persist app state to localStorage (only simple, serializable fields)
+        function saveStateToStorage() {
+            try {
+                const payload = {
+                    startDate: state.startDate ? formatDate(state.startDate) : null,
+                    endDate: state.endDate ? formatDate(state.endDate) : null,
+                    holidayAllowance: state.holidayAllowance,
+                    plannedHolidays: Array.from(state.plannedHolidays),
+                    showBankHolidays: state.showBankHolidays,
+                    currentDate: state.currentDate ? formatDate(state.currentDate) : null
+                };
+                localStorage.setItem('holidayPlannerState', JSON.stringify(payload));
+            } catch (e) {
+                console.error('Failed to save state:', e);
+            }
+        }
+
+        function loadStateFromStorage() {
+            try {
+                const raw = localStorage.getItem('holidayPlannerState');
+                if (!raw) return false;
+                const p = JSON.parse(raw);
+
+                if (p.holidayAllowance != null) {
+                    state.holidayAllowance = p.holidayAllowance;
+                    document.getElementById('holidayAllowance').value = p.holidayAllowance;
+                }
+
+                if (p.startDate) {
+                    document.getElementById('startDate').value = p.startDate;
+                    state.startDate = new Date(p.startDate + 'T00:00:00');
+                }
+
+                if (p.endDate) {
+                    document.getElementById('endDate').value = p.endDate;
+                    state.endDate = new Date(p.endDate + 'T00:00:00');
+                }
+
+                if (Array.isArray(p.plannedHolidays)) {
+                    state.plannedHolidays = new Set(p.plannedHolidays);
+                }
+
+                if (typeof p.showBankHolidays === 'boolean') {
+                    state.showBankHolidays = p.showBankHolidays;
+                    document.getElementById('showBankHolidays').checked = p.showBankHolidays;
+                }
+
+                if (p.currentDate) {
+                    state.currentDate = new Date(p.currentDate + 'T00:00:00');
+                }
+
+                // Ensure endDate input min reflects loaded start
+                if (state.startDate) {
+                    document.getElementById('endDate').min = formatDate(state.startDate);
+                }
+
+                return true;
+            } catch (e) {
+                console.error('Failed to load saved state:', e);
+                return false;
+            }
+        }
+
+        function clearSavedState() {
+            localStorage.removeItem('holidayPlannerState');
+            // Reset UI + state to defaults
+            state.plannedHolidays = new Set();
+            state.holidayAllowance = 25;
+            document.getElementById('holidayAllowance').value = 25;
+            document.getElementById('showBankHolidays').checked = true;
+            state.showBankHolidays = true;
+            initializeDateInputs();
+            renderCalendar();
+            updateSummary();
+        }
+
         function updateSettings() {
             const allowance = parseInt(document.getElementById('holidayAllowance').value);
             const startDate = document.getElementById('startDate').valueAsDate;
@@ -321,19 +435,13 @@
             // Keep the endDate input min equal to the selected startDate so users can't pick an earlier end
             if (startDate) {
                 endDateInput.min = formatDate(startDate);
+                state.startDate = startDate;
             } else {
-                // if no start selected, fall back to start of year
                 const now = new Date();
                 endDateInput.min = formatDate(new Date(now.getFullYear(), 0, 1));
             }
 
-            // Ensure we always set state.startDate when provided
-            if (startDate) {
-                state.startDate = startDate;
-            }
-
             if (endDate) {
-                // if end is earlier than start, snap end to start
                 if (state.startDate && formatDate(endDate) < formatDate(state.startDate)) {
                     endDateInput.valueAsDate = state.startDate;
                     state.endDate = state.startDate;
@@ -342,29 +450,37 @@
                 }
             }
 
-            // Make current view use the start date if available
             if (state.startDate) state.currentDate = new Date(state.startDate);
-            
+
             state.holidayAllowance = allowance;
             renderCalendar();
             updateSummary();
+            saveStateToStorage();
         }
 
+        // Wire up event listeners
         document.getElementById('prevMonth').addEventListener('click', previousMonth);
         document.getElementById('nextMonth').addEventListener('click', nextMonth);
-        
+
         document.getElementById('holidayAllowance').addEventListener('change', updateSettings);
         document.getElementById('startDate').addEventListener('change', updateSettings);
         document.getElementById('endDate').addEventListener('change', updateSettings);
-        
+
         document.getElementById('showBankHolidays').addEventListener('change', () => {
             state.showBankHolidays = document.getElementById('showBankHolidays').checked;
             renderCalendar();
+            saveStateToStorage();
+        });
+
+        document.getElementById('clearSaved').addEventListener('click', () => {
+            clearSavedState();
         });
 
         async function init() {
             initializeDateInputs();
             await fetchBankHolidays();
+            // Load persisted state (if any) after bank holidays are available
+            loadStateFromStorage();
             renderCalendar();
             updateSummary();
         }
