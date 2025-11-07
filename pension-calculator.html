@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pension Calculator</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Load Inter font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Custom styles for number inputs */
+        input[type="number"] {
+            -moz-appearance: textfield;
+        }
+        input[type="number"]::-webkit-outer-spin-button,
+        input[type="number"]::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <header class="bg-white shadow-md mb-8">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex-shrink-0">
+                    <a href="index.html" class="text-2xl font-bold text-gray-800">Alex's Helpful Tools</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="w-full max-w-3xl mx-auto bg-white rounded-xl shadow-2xl p-6 md:p-10">
+        
+        <h1 class="text-3xl font-bold text-center text-gray-800 mb-8">
+            Pension Calculator
+        </h1>
+
+        <!-- Form container -->
+        <form id="pensionForm" class="space-y-8">
+
+            <!-- Section: Timeline -->
+            <div>
+                <h2 class="text-xl font-semibold text-gray-700 border-b border-gray-200 pb-2 mb-4">Your Timeline</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label for="currentAge" class="block text-sm font-medium text-gray-600 mb-1">Current Age</label>
+                        <input type="number" id="currentAge" value="30" min="18" max="100" class="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500" required>
+                    </div>
+                    <div>
+                        <label for="retirementAge" class="block text-sm font-medium text-gray-600 mb-1">Target Retirement Age</label>
+                        <input type="number" id="retirementAge" value="67" min="18" max="100" class="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500" required>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section: Investments -->
+            <div>
+                <h2 class="text-xl font-semibold text-gray-700 border-b border-gray-200 pb-2 mb-4">Your Investments</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Pension Pot -->
+                    <div class="space-y-4 p-4 bg-gray-50 rounded-lg border">
+                        <h3 class_ ="font-semibold text-gray-700">Pension Pot</h3>
+                        <div>
+                            <label for="currentPension" class="block text-sm font-medium text-gray-600 mb-1">Current Value (£)</label>
+                            <input type="number" id="currentPension" value="50000" min="0" class="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500" required>
+                        </div>
+                        <div>
+                            <label for="monthlyPension" class="block text-sm font-medium text-gray-600 mb-1">Monthly Contribution (£)</label>
+                            <input type="number" id="monthlyPension" value="300" min="0" class="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500" required>
+                        </div>
+                    </div>
+                    <!-- Other Investments -->
+                    <div class="space-y-4 p-4 bg-gray-50 rounded-lg border">
+                        <h3 class="font-semibold text-gray-700">Other Investments (e.g., ISA)</h3>
+                        <div>
+                            <label for="currentInvestments" class="block text-sm font-medium text-gray-600 mb-1">Current Value (£)</label>
+                            <input type="number" id="currentInvestments" value="10000" min="0" class="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500" required>
+                        </div>
+                        <div>
+                            <label for="monthlyInvestments" class="block text-sm font-medium text-gray-600 mb-1">Monthly Contribution (£)</label>
+                            <input type="number" id="monthlyInvestments" value="100" min="0" class="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500" required>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section: Assumptions -->
+            <div>
+                <h2 class="text-xl font-semibold text-gray-700 border-b border-gray-200 pb-2 mb-4">Assumptions</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label for="returnRate" class="block text-sm font-medium text-gray-600 mb-1">Annual Investment Return (%)</label>
+                        <input type="number" id="returnRate" value="5" min="0" max="20" step="0.1" class="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500" required>
+                    </div>
+                    <div>
+                        <label for="inflationRate" class="block text-sm font-medium text-gray-600 mb-1">Annual Inflation (%)</label>
+                        <input type="number" id="inflationRate" value="2.5" min="0" max="20" step="0.1" class="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500" required>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section: Goal -->
+            <div>
+                <h2 class="text-xl font-semibold text-gray-700 border-b border-gray-200 pb-2 mb-4">Your Goal</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label for="targetIncome" class="block text-sm font-medium text-gray-600 mb-1">Target Annual Income (in today's money)</label>
+                        <input type="number" id="targetIncome" value="35000" min="0" class="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500" required>
+                    </div>
+                    <div>
+                        <label for="withdrawalRate" class="block text-sm font-medium text-gray-600 mb-1">Annual Withdrawal Rate (%)</label>
+                        <input type="number" id="withdrawalRate" value="4" min="1" max="10" step="0.1" class="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500" required>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Button -->
+            <button type="button" id="calculateBtn" class="w-full text-lg font-semibold text-white bg-blue-600 hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 rounded-lg p-3.5 transition-all duration-200 ease-in-out shadow-md">
+                Calculate
+            </button>
+        </form>
+
+        <!-- Results Section -->
+        <div id="results" class="hidden mt-10 p-6 bg-blue-50 border border-blue-200 rounded-lg space-y-6">
+            <h2 class="text-2xl font-bold text-center text-blue-800 mb-4">Your Pension Projection</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Left Column -->
+                <div class="space-y-4">
+                    <div>
+                        <p class="text-sm font-medium text-blue-700">Projected Total Pot at Retirement</p>
+                        <p id="projectedPot" class="text-3xl font-bold text-blue-900">£0</p>
+                    </div>
+                     <div>
+                        <p class="text-sm font-medium text-blue-700">Target Pot Needed (for your goal)</p>
+                        <p id="targetPot" class="text-3xl font-bold text-blue-900">£0</p>
+                    </div>
+                </div>
+                
+                <!-- Right Column -->
+                <div class="space-y-4">
+                    <div>
+                        <p class="text-sm font-medium text-gray-700">Result (Surplus / Shortfall)</p>
+                        <p id="shortfallSurplus" class="text-3xl font-bold">£0</p>
+                    </div>
+                    <div>
+                        <p class="text-sm font-medium text-gray-700">Sustainable Annual Income (in today's money)</p>
+                        <p id="sustainableIncomeToday" class="text-3xl font-bold text-gray-800">£0</p>
+                    </div>
+                </div>
+            </div>
+            
+            <p id="resultMessage" class="text-center font-medium text-lg mt-4"></p>
+
+        </div>
+    </main>
+
+    <script>
+        // Attach event listener to the calculate button
+        document.getElementById('calculateBtn').addEventListener('click', runCalculation);
+
+        /**
+         * Utility to get a parsed float value from an input field.
+         * @param {string} id - The ID of the input element.
+         * @returns {number} The parsed number, or 0 if invalid.
+         */
+        function getVal(id) {
+            const val = parseFloat(document.getElementById(id).value);
+            return isNaN(val) ? 0 : val;
+        }
+
+        /**
+         * Formats a number as GBP currency.
+         * @param {number} value - The number to format.
+         * @returns {string} Formatted currency string.
+         */
+        function formatCurrency(value) {
+            return new Intl.NumberFormat('en-GB', {
+                style: 'currency',
+                currency: 'GBP',
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0,
+            }).format(value);
+        }
+
+        /**
+         * Calculates the future value of a principal amount and a series of payments.
+         * @param {number} principal - The starting amount.
+         * @param {number} monthlyPayment - The amount added each month.
+         * @param {number} monthlyRate - The monthly interest rate (decimal).
+         * @param {number} numMonths - The total number of months.
+         * @returns {number} The total future value.
+         */
+        function calculateFutureValue(principal, monthlyPayment, monthlyRate, numMonths) {
+            // Handle zero interest rate case
+            if (monthlyRate === 0) {
+                return principal + (monthlyPayment * numMonths);
+            }
+
+            // Calculate future value of the principal
+            const fvPrincipal = principal * Math.pow(1 + monthlyRate, numMonths);
+
+            // Calculate future value of the series of payments
+            const fvPayments = monthlyPayment * ((Math.pow(1 + monthlyRate, numMonths) - 1) / monthlyRate);
+
+            return fvPrincipal + fvPayments;
+        }
+
+        /**
+         * Main function to run the pension calculation.
+         */
+        function runCalculation() {
+            // Read user inputs from form
+            const currentAge = getVal('currentAge');
+            const retirementAge = getVal('retirementAge');
+            const currentPension = getVal('currentPension');
+            const monthlyPension = getVal('monthlyPension');
+            const currentInvestments = getVal('currentInvestments');
+            const monthlyInvestments = getVal('monthlyInvestments');
+            
+            // Convert percentage inputs to decimals
+            const annualReturn = getVal('returnRate') / 100;
+            const annualInflation = getVal('inflationRate') / 100;
+            const withdrawalRate = getVal('withdrawalRate') / 100;
+            
+            const targetIncome = getVal('targetIncome');
+
+            // --- Core Calculations ---
+
+            // 1. Calculate time remaining
+            const yearsToRetirement = retirementAge - currentAge;
+            if (yearsToRetirement <= 0) {
+                alert("Retirement age must be greater than current age.");
+                return;
+            }
+            const numMonths = yearsToRetirement * 12;
+
+            // 2. Convert annual return rate to monthly
+            const monthlyReturnRate = Math.pow(1 + annualReturn, 1/12) - 1;
+
+            // 3. Calculate future value of both pots
+            const fvPension = calculateFutureValue(currentPension, monthlyPension, monthlyReturnRate, numMonths);
+            const fvInvestments = calculateFutureValue(currentInvestments, monthlyInvestments, monthlyReturnRate, numMonths);
+            
+            const totalProjectedPot = fvPension + fvInvestments;
+
+            // 4. Calculate target pot needed
+            // Adjust target income for inflation
+            const futureTargetIncome = targetIncome * Math.pow(1 + annualInflation, yearsToRetirement);
+            const targetPotNeeded = futureTargetIncome / withdrawalRate;
+
+            // 5. Calculate shortfall or surplus
+            const shortfallSurplus = totalProjectedPot - targetPotNeeded;
+
+            // 6. Calculate what the projected pot *can* provide
+            // Sustainable income in future money
+            const sustainableFutureIncome = totalProjectedPot * withdrawalRate;
+            // Sustainable income in today's money (adjusted back for inflation)
+            const sustainableIncomeToday = sustainableFutureIncome / Math.pow(1 + annualInflation, yearsToRetirement);
+            
+            // --- Display Results ---
+            displayResults({
+                totalProjectedPot,
+                targetPotNeeded,
+                shortfallSurplus,
+                sustainableIncomeToday
+            });
+        }
+
+        /**
+         * Updates the DOM with calculation results.
+         * @param {object} results - An object containing the calculated values.
+         */
+        function displayResults(results) {
+            const { totalProjectedPot, targetPotNeeded, shortfallSurplus, sustainableIncomeToday } = results;
+
+            // Show the results container
+            document.getElementById('results').classList.remove('hidden');
+
+            // Update text content
+            document.getElementById('projectedPot').textContent = formatCurrency(totalProjectedPot);
+            document.getElementById('targetPot').textContent = formatCurrency(targetPotNeeded);
+            document.getElementById('shortfallSurplus').textContent = formatCurrency(shortfallSurplus);
+            document.getElementById('sustainableIncomeToday').textContent = formatCurrency(sustainableIncomeToday);
+            
+            // Update shortfall/surplus styling and message
+            const surplusEl = document.getElementById('shortfallSurplus');
+            const messageEl = document.getElementById('resultMessage');
+            
+            // Clear previous color classes
+            surplusEl.classList.remove('text-green-600', 'text-red-600');
+
+            if (shortfallSurplus >= 0) {
+                surplusEl.classList.add('text-green-600');
+                surplusEl.textContent = `${formatCurrency(shortfallSurplus)} (Surplus)`;
+                messageEl.textContent = "Congratulations! You're on track to meet your retirement goal.";
+                messageEl.classList.add('text-green-700');
+                messageEl.classList.remove('text-red-700');
+
+            } else {
+                surplusEl.classList.add('text-red-600');
+                surplusEl.textContent = `${formatCurrency(Math.abs(shortfallSurplus))} (Shortfall)`;
+                messageEl.textContent = "You have a projected shortfall. Consider increasing contributions or adjusting your goal.";
+                messageEl.classList.add('text-red-700');
+                messageEl.classList.remove('text-green-700');
+            }
+        }
+
+    </script>
+</body>
+</html>
