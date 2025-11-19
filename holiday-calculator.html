@@ -3,164 +3,188 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Holiday Planner</title>
+    <title>Alex's Holiday Planner</title>
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Inter Font -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        body {
-            font-family: 'Inter', sans-serif;
-        }
-        input[type="number"] {
-            -moz-appearance: textfield;
-            appearance: textfield;
-        }
-        input[type="number"]::-webkit-outer-spin-button,
-        input[type="number"]::-webkit-inner-spin-button {
-            -webkit-appearance: none;
-            margin: 0;
-        }
-        /* Responsive tweaks for calendar navigation and day cells */
+        body { font-family: 'Inter', sans-serif; }
+        /* Input styling */
+        input[type="number"] { -moz-appearance: textfield; appearance: textfield; }
+        input[type="number"]::-webkit-outer-spin-button, input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+        /* Scrollbar */
+        .custom-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
+        .custom-scroll::-webkit-scrollbar-track { background: #f1f1f1; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 3px; }
+        
+        /* Calendar Specific Styles (Preserved & Adapted) */
         @media (max-width: 640px) {
-            /* Make nav buttons compact and circular on small screens */
             .nav-btn {
-                width: 40px;
-                height: 40px;
-                padding: 0;
-                border-radius: 9999px; /* full */
-                display: inline-flex;
-                align-items: center;
-                justify-content: center;
-                box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+                width: 36px; height: 36px; padding: 0; border-radius: 9999px;
+                display: inline-flex; align-items: center; justify-content: center;
             }
-
-            /* Show only arrow on very small screens; full text remains on sm+ (handled in markup) */
-            #currentMonth {
-                font-size: 1.125rem; /* text-lg */
-            }
-
-            /* Slightly tighter grid spacing so day cells remain usable */
-            #calendar {
-                gap: 6px;
-            }
-
-            /* Make calendar day cells slightly smaller text and better touch target */
-            .calendar-day {
-                font-size: 0.9rem;
-                border-width: 1px;
-                padding: 6px;
-            }
+            #calendar { gap: 4px; }
+            .calendar-day { font-size: 0.85rem; padding: 4px; min-height: 40px; }
         }
     </style>
 </head>
-<body class="bg-gray-100">
-    <header class="bg-white shadow-md mb-8">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between items-center h-16">
-                <div class="flex-shrink-0">
-                    <a href="index.html" class="text-2xl font-bold text-gray-800">Alex's Helpful Tools</a>
+<body class="bg-gray-50 text-gray-800 flex flex-col h-screen overflow-hidden">
+
+    <!-- Header -->
+    <header class="bg-white shadow-sm border-b border-gray-200 flex-shrink-0 z-30 relative">
+        <div class="max-w-full mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-14">
+                <div class="flex items-center gap-2">
+                    <a href="index.html" class="flex items-center gap-2 hover:opacity-80 transition">
+                        <div class="bg-blue-600 text-white p-1.5 rounded-lg">
+                            <!-- Calendar Icon -->
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                        </div>
+                        <span class="text-lg font-bold text-gray-900 tracking-tight">Alex's <span class="text-blue-600">Holiday Planner</span></span>
+                    </a>
+                </div>
+                
+                <!-- Mobile Menu Button -->
+                <button id="mobileMenuBtn" class="md:hidden p-2 text-gray-600 hover:text-blue-600">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+                </button>
+
+                <div class="hidden md:block text-xs font-medium text-gray-500 bg-gray-100 px-3 py-1 rounded-full">
+                    Annual Leave Tracker
                 </div>
             </div>
         </div>
     </header>
 
-    <main class="w-full max-w-7xl mx-auto bg-white rounded-xl shadow-2xl p-6 md:p-10">
-        <h1 class="text-3xl font-bold text-center text-gray-800 mb-8">
-            Holiday Planner
-        </h1>
+    <!-- Main Layout -->
+    <div class="flex-1 flex flex-col md:flex-row overflow-hidden relative">
+        
+        <!-- Sidebar: Configuration -->
+        <aside id="sidebar" class="absolute md:static inset-0 z-20 bg-white transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out flex flex-col w-full md:w-[400px] lg:w-[450px] border-r border-gray-200 shadow-xl md:shadow-none">
+            <div class="p-4 border-b border-gray-200 flex justify-between items-center md:hidden bg-gray-50">
+                <span class="font-bold text-gray-700">Configuration</span>
+                <button id="closeSidebar" class="text-gray-500 p-1">✕ Close</button>
+            </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
-            <div class="lg:col-span-1 space-y-6">
-                <div class="p-6 bg-gray-50 rounded-lg border">
-                    <h2 class="text-xl font-semibold text-gray-700 border-b border-gray-200 pb-2 mb-4">Settings</h2>
+            <div class="flex-1 overflow-y-auto custom-scroll p-5 space-y-6">
+                
+                <!-- Settings -->
+                <section class="space-y-4">
+                    <h2 class="text-sm font-bold text-gray-900 uppercase tracking-wider flex items-center gap-2">
+                        <svg class="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                        Parameters
+                    </h2>
                     
-                    <div class="space-y-4">
-                        <div>
-                            <label for="holidayAllowance" class="block text-sm font-medium text-gray-600 mb-1">Holiday Allowance (days)</label>
-                            <input type="number" id="holidayAllowance" value="25" min="0" max="365" 
-                                   class="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500">
-                        </div>
+                    <div class="group">
+                        <label class="block text-xs font-medium text-gray-500 mb-1">Holiday Allowance (Days)</label>
+                        <input type="number" id="holidayAllowance" value="25" min="0" max="365" class="w-full p-2 bg-gray-50 border border-gray-200 rounded-md text-sm font-semibold focus:ring-2 focus:ring-blue-500 outline-none transition">
+                    </div>
 
-                        <div>
-                            <label for="startDate" class="block text-sm font-medium text-gray-600 mb-1">Start Date</label>
-                            <input type="date" id="startDate" class="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="group">
+                            <label class="block text-xs font-medium text-gray-500 mb-1">Start Date</label>
+                            <input type="date" id="startDate" class="w-full p-2 bg-gray-50 border border-gray-200 rounded-md text-sm font-semibold focus:ring-2 focus:ring-blue-500 outline-none transition">
                         </div>
-
-                        <div>
-                            <label for="endDate" class="block text-sm font-medium text-gray-600 mb-1">End Date</label>
-                            <input type="date" id="endDate" class="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500">
-                        </div>
-
-                        <div class="pt-2">
-                            <label class="flex items-center">
-                                <input type="checkbox" id="showBankHolidays" checked class="mr-2 h-4 w-4 text-blue-600 rounded">
-                                <span class="text-sm font-medium text-gray-700">Show UK Bank Holidays</span>
-                            </label>
-                        </div>
-                        <div class="pt-2">
-                            <button id="clearSaved" class="w-full px-3 py-2 bg-white border border-red-200 text-red-600 rounded-lg hover:bg-red-50">Clear saved data</button>
+                        <div class="group">
+                            <label class="block text-xs font-medium text-gray-500 mb-1">End Date</label>
+                            <input type="date" id="endDate" class="w-full p-2 bg-gray-50 border border-gray-200 rounded-md text-sm font-semibold focus:ring-2 focus:ring-blue-500 outline-none transition">
                         </div>
                     </div>
-                </div>
 
-                <div class="p-6 bg-gray-50 rounded-lg border">
-                    <h2 class="text-xl font-semibold text-gray-700 border-b border-gray-200 pb-2 mb-4">Summary</h2>
-                    <div class="space-y-3">
-                        <div>
-                            <p class="text-sm font-medium text-gray-600">Total Allowance</p>
-                            <p id="totalAllowance" class="text-2xl font-bold text-gray-800">0 days</p>
-                        </div>
-                        <div>
-                            <p class="text-sm font-medium text-gray-600">Planned</p>
-                            <p id="plannedDays" class="text-2xl font-bold text-blue-600">0 days</p>
-                        </div>
-                        <div>
-                            <p class="text-sm font-medium text-gray-600">Remaining</p>
-                            <p id="remainingDays" class="text-2xl font-bold text-green-600">0 days</p>
+                    <div class="p-3 border border-gray-200 rounded-lg bg-indigo-50/50">
+                        <div class="flex items-start gap-3">
+                            <input type="checkbox" id="showBankHolidays" checked class="mt-1 text-indigo-600 rounded border-gray-300 focus:ring-indigo-500">
+                            <div class="flex-1">
+                                <label for="showBankHolidays" class="text-sm font-semibold text-gray-800 cursor-pointer">Show UK Bank Holidays</label>
+                                <p class="text-[10px] text-gray-500 mt-1">Automatically excludes BH from allowance deduction.</p>
+                            </div>
                         </div>
                     </div>
-                </div>
-
-                <div class="p-6 bg-gray-50 rounded-lg border">
-                    <h2 class="text-xl font-semibold text-gray-700 border-b border-gray-200 pb-2 mb-4">Legend</h2>
-                    <div class="space-y-3 text-sm">
+                </section>
+                
+                <hr class="border-gray-100">
+                
+                <!-- Legend -->
+                <section class="space-y-4">
+                    <h2 class="text-sm font-bold text-gray-900 uppercase tracking-wider flex items-center gap-2">
+                        <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        Legend
+                    </h2>
+                    <div class="space-y-3 text-sm bg-gray-50 p-3 rounded-lg border border-gray-100">
                         <div class="flex items-center">
-                            <div class="w-6 h-6 bg-blue-500 rounded mr-3"></div>
+                            <div class="w-5 h-5 bg-blue-500 rounded mr-3 shadow-sm"></div>
                             <span class="text-gray-700">Planned Holiday</span>
                         </div>
                         <div class="flex items-center">
-                            <div class="w-6 h-6 bg-green-100 border-2 border-green-500 rounded mr-3"></div>
+                            <div class="w-5 h-5 bg-green-100 border border-green-500 rounded mr-3 shadow-sm flex items-center justify-center text-[10px] font-bold text-green-700">BH</div>
                             <span class="text-gray-700">Bank Holiday</span>
                         </div>
                         <div class="flex items-center">
-                            <div class="w-6 h-6 bg-gray-200 rounded mr-3"></div>
+                            <div class="w-5 h-5 bg-gray-200 rounded mr-3"></div>
                             <span class="text-gray-700">Weekend</span>
                         </div>
                     </div>
+                </section>
+
+                <div class="pt-4">
+                    <button id="clearSaved" class="w-full text-xs text-red-400 hover:text-red-600 underline text-center">Reset all data</button>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 flex flex-col overflow-hidden bg-gray-50 relative w-full">
+            
+            <!-- KPI Cards (Summary) -->
+            <div class="p-4 sm:p-6 grid grid-cols-3 gap-3 flex-shrink-0">
+                <div class="bg-white p-3 sm:p-4 rounded-xl shadow-sm border border-gray-200">
+                    <p class="text-[10px] sm:text-xs font-medium text-gray-500 uppercase truncate">Total Allowance</p>
+                    <h3 id="totalAllowance" class="text-lg sm:text-2xl font-bold text-gray-900 mt-1 truncate">0 days</h3>
+                </div>
+                <div class="bg-white p-3 sm:p-4 rounded-xl shadow-sm border border-gray-200">
+                    <p class="text-[10px] sm:text-xs font-medium text-gray-500 uppercase truncate">Planned</p>
+                    <h3 id="plannedDays" class="text-lg sm:text-2xl font-bold text-blue-600 mt-1 truncate">0 days</h3>
+                </div>
+                <div class="bg-white p-3 sm:p-4 rounded-xl shadow-sm border border-gray-200">
+                    <p class="text-[10px] sm:text-xs font-medium text-gray-500 uppercase truncate">Remaining</p>
+                    <h3 id="remainingDays" class="text-lg sm:text-2xl font-bold text-green-600 mt-1 truncate">0 days</h3>
                 </div>
             </div>
 
-            <div class="lg:col-span-3">
-                <div class="p-6 bg-gray-50 rounded-lg border">
-                    <div class="flex justify-between items-center mb-6 gap-4">
-                        <button id="prevMonth" class="nav-btn px-0 sm:px-4 py-2 bg-white border border-gray-300 rounded-full sm:rounded-lg hover:bg-gray-100 transition font-medium text-gray-700 shadow-sm" aria-label="Previous month">
-                            <span class="inline sm:hidden text-base">←</span>
-                            <span class="hidden sm:inline">← Previous</span>
+            <!-- Calendar Area -->
+            <div class="flex-1 overflow-y-auto custom-scroll p-4 sm:p-6 pt-0">
+                <div class="bg-white rounded-xl border border-gray-200 shadow-sm h-full flex flex-col min-h-[400px]">
+                    
+                    <!-- Calendar Header -->
+                    <div class="flex justify-between items-center p-4 border-b border-gray-100 gap-4">
+                        <button id="prevMonth" class="nav-btn px-3 py-1.5 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 text-gray-600 transition shadow-sm text-sm">
+                            <span class="sm:hidden">←</span><span class="hidden sm:inline">← Prev</span>
                         </button>
-                        <h2 id="currentMonth" class="text-lg sm:text-2xl font-bold text-gray-800 text-center flex-1"></h2>
-                        <button id="nextMonth" class="nav-btn px-0 sm:px-4 py-2 bg-white border border-gray-300 rounded-full sm:rounded-lg hover:bg-gray-100 transition font-medium text-gray-700 shadow-sm" aria-label="Next month">
-                            <span class="inline sm:hidden text-base">→</span>
-                            <span class="hidden sm:inline">Next →</span>
+                        <h2 id="currentMonth" class="text-lg font-bold text-gray-800 text-center flex-1"></h2>
+                        <button id="nextMonth" class="nav-btn px-3 py-1.5 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 text-gray-600 transition shadow-sm text-sm">
+                            <span class="sm:hidden">→</span><span class="hidden sm:inline">Next →</span>
                         </button>
                     </div>
-                    <div id="calendar" class="grid grid-cols-7 gap-2"></div>
+
+                    <!-- Calendar Grid -->
+                    <div class="p-4 flex-1">
+                        <div id="calendar" class="grid grid-cols-7 gap-2 h-full content-start"></div>
+                    </div>
                 </div>
             </div>
-        </div>
-    </main>
+        </main>
+    </div>
+
+    <!-- Overlay for mobile sidebar -->
+    <div id="sidebarOverlay" class="fixed inset-0 bg-gray-900 bg-opacity-50 z-10 hidden md:hidden glass"></div>
 
     <script>
+        /**
+         * Holiday Planner Logic
+         */
         const state = {
             currentDate: new Date(),
             startDate: null,
@@ -180,23 +204,17 @@
 
         function initializeDateInputs() {
             const now = new Date();
-
-            // Provide a reasonable multi-year selectable range so mobile pickers
-            // (including Android's native date picker) can choose dates outside
-            // the current calendar year.
             const rangeStart = new Date(now.getFullYear() - 5, 0, 1);
             const rangeEnd = new Date(now.getFullYear() + 5, 11, 31);
 
             const startDateInput = document.getElementById('startDate');
             const endDateInput = document.getElementById('endDate');
 
-            // Allow selection across multiple years rather than restricting to the current year
             startDateInput.min = formatDate(rangeStart);
             startDateInput.max = formatDate(rangeEnd);
             endDateInput.min = formatDate(rangeStart);
             endDateInput.max = formatDate(rangeEnd);
 
-            // Default values: start at today and default end to ~1 year from today
             const defaultStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
             const defaultEnd = new Date(now.getFullYear() + 1, now.getMonth(), now.getDate());
 
@@ -212,12 +230,10 @@
             try {
                 const response = await fetch('https://www.gov.uk/bank-holidays.json');
                 const data = await response.json();
-
                 const holidays = data['england-and-wales'].events.map(event => ({
                     date: new Date(event.date + 'T00:00:00'),
                     title: event.title
                 }));
-
                 state.bankHolidays = holidays;
                 return holidays;
             } catch (error) {
@@ -271,7 +287,7 @@
             const dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
             dayNames.forEach(day => {
                 const header = document.createElement('div');
-                header.className = 'text-center font-semibold text-gray-700 py-3 text-sm';
+                header.className = 'text-center font-semibold text-gray-400 text-xs uppercase tracking-wider py-2';
                 header.textContent = day;
                 calendar.appendChild(header);
             });
@@ -299,35 +315,35 @@
             const bankHoliday = isBankHoliday(date);
             const isPlanned = isPlannedHoliday(date);
 
-            // Compare only the date parts (YYYY-MM-DD) to avoid timezone/time component issues
             let isInRange = true;
             if (state.startDate && state.endDate) {
                 const d = formatDate(date);
                 isInRange = d >= formatDate(state.startDate) && d <= formatDate(state.endDate);
             }
 
-            cell.className = 'calendar-day aspect-square flex flex-col items-center justify-center text-sm border-2 rounded-lg cursor-pointer transition-all duration-200 relative';
+            // Aesthetic Update: Matching cell styles to be cleaner
+            cell.className = 'calendar-day aspect-square flex flex-col items-center justify-center text-sm border rounded-lg cursor-pointer transition-all duration-200 relative';
 
             if (!isInRange) {
-                cell.className += ' bg-gray-100 border-gray-200 text-gray-400 cursor-not-allowed';
+                cell.className += ' bg-gray-50 border-gray-100 text-gray-300 cursor-not-allowed';
             } else if (isPlanned) {
-                cell.className += ' bg-blue-500 border-blue-600 text-white hover:bg-blue-600 shadow-md';
+                cell.className += ' bg-blue-500 border-blue-600 text-white hover:bg-blue-600 shadow-sm';
             } else if (bankHoliday) {
-                cell.className += ' bg-green-100 border-green-500 text-green-800 cursor-default';
+                cell.className += ' bg-green-50 border-green-200 text-green-800 cursor-default';
             } else if (isWeekendDay) {
-                cell.className += ' bg-gray-200 border-gray-300 text-gray-600 cursor-default';
+                cell.className += ' bg-gray-100 border-gray-200 text-gray-400 cursor-default';
             } else {
-                cell.className += ' bg-white border-gray-300 hover:bg-blue-50 hover:border-blue-400 shadow-sm';
+                cell.className += ' bg-white border-gray-200 hover:border-blue-300 hover:shadow-sm text-gray-700';
             }
 
             const dayNumber = document.createElement('div');
-            dayNumber.className = 'font-semibold text-base';
+            dayNumber.className = 'font-medium';
             dayNumber.textContent = date.getDate();
             cell.appendChild(dayNumber);
 
             if (bankHoliday) {
                 const indicator = document.createElement('div');
-                indicator.className = 'text-xs font-bold mt-1';
+                indicator.className = 'text-[10px] font-bold mt-0.5 text-green-600';
                 indicator.textContent = 'BH';
                 indicator.title = bankHoliday.title;
                 cell.appendChild(indicator);
@@ -356,7 +372,6 @@
             document.getElementById('remainingDays').textContent = (state.holidayAllowance - state.plannedHolidays.size) + ' days';
         }
 
-        // Persist app state to localStorage (only simple, serializable fields)
         function saveStateToStorage() {
             try {
                 const payload = {
@@ -368,9 +383,7 @@
                     currentDate: state.currentDate ? formatDate(state.currentDate) : null
                 };
                 localStorage.setItem('holidayPlannerState', JSON.stringify(payload));
-            } catch (e) {
-                console.error('Failed to save state:', e);
-            }
+            } catch (e) { console.error(e); }
         }
 
         function loadStateFromStorage() {
@@ -383,69 +396,54 @@
                     state.holidayAllowance = p.holidayAllowance;
                     document.getElementById('holidayAllowance').value = p.holidayAllowance;
                 }
-
                 if (p.startDate) {
                     document.getElementById('startDate').value = p.startDate;
                     state.startDate = new Date(p.startDate + 'T00:00:00');
                 }
-
                 if (p.endDate) {
                     document.getElementById('endDate').value = p.endDate;
                     state.endDate = new Date(p.endDate + 'T00:00:00');
                 }
-
                 if (Array.isArray(p.plannedHolidays)) {
                     state.plannedHolidays = new Set(p.plannedHolidays);
                 }
-
                 if (typeof p.showBankHolidays === 'boolean') {
                     state.showBankHolidays = p.showBankHolidays;
                     document.getElementById('showBankHolidays').checked = p.showBankHolidays;
                 }
-
                 if (p.currentDate) {
                     state.currentDate = new Date(p.currentDate + 'T00:00:00');
                 }
-
-                // Ensure endDate input min reflects loaded start
                 if (state.startDate) {
                     document.getElementById('endDate').min = formatDate(state.startDate);
                 }
-
                 return true;
-            } catch (e) {
-                console.error('Failed to load saved state:', e);
-                return false;
-            }
+            } catch (e) { console.error(e); return false; }
         }
 
         function clearSavedState() {
-            localStorage.removeItem('holidayPlannerState');
-            // Reset UI + state to defaults
-            state.plannedHolidays = new Set();
-            state.holidayAllowance = 25;
-            document.getElementById('holidayAllowance').value = 25;
-            document.getElementById('showBankHolidays').checked = true;
-            state.showBankHolidays = true;
-            initializeDateInputs();
-            renderCalendar();
-            updateSummary();
+            if(confirm("Clear all holiday data?")) {
+                localStorage.removeItem('holidayPlannerState');
+                state.plannedHolidays = new Set();
+                state.holidayAllowance = 25;
+                document.getElementById('holidayAllowance').value = 25;
+                document.getElementById('showBankHolidays').checked = true;
+                state.showBankHolidays = true;
+                initializeDateInputs();
+                renderCalendar();
+                updateSummary();
+            }
         }
 
         function updateSettings() {
             const allowance = parseInt(document.getElementById('holidayAllowance').value);
             const startDate = document.getElementById('startDate').valueAsDate;
             const endDate = document.getElementById('endDate').valueAsDate;
-            const startDateInput = document.getElementById('startDate');
             const endDateInput = document.getElementById('endDate');
 
-            // Keep the endDate input min equal to the selected startDate so users can't pick an earlier end
             if (startDate) {
                 endDateInput.min = formatDate(startDate);
                 state.startDate = startDate;
-            } else {
-                const now = new Date();
-                endDateInput.min = formatDate(new Date(now.getFullYear(), 0, 1));
             }
 
             if (endDate) {
@@ -465,28 +463,30 @@
             saveStateToStorage();
         }
 
-        // Wire up event listeners
+        // Listeners
         document.getElementById('prevMonth').addEventListener('click', previousMonth);
         document.getElementById('nextMonth').addEventListener('click', nextMonth);
-
         document.getElementById('holidayAllowance').addEventListener('change', updateSettings);
         document.getElementById('startDate').addEventListener('change', updateSettings);
         document.getElementById('endDate').addEventListener('change', updateSettings);
-
         document.getElementById('showBankHolidays').addEventListener('change', () => {
             state.showBankHolidays = document.getElementById('showBankHolidays').checked;
             renderCalendar();
             saveStateToStorage();
         });
+        document.getElementById('clearSaved').addEventListener('click', clearSavedState);
 
-        document.getElementById('clearSaved').addEventListener('click', () => {
-            clearSavedState();
-        });
+        // Mobile Menu Toggle
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('sidebarOverlay');
+        const toggle = () => { sidebar.classList.toggle('-translate-x-full'); overlay.classList.toggle('hidden'); };
+        document.getElementById('mobileMenuBtn').onclick = toggle;
+        document.getElementById('closeSidebar').onclick = toggle;
+        overlay.onclick = toggle;
 
         async function init() {
             initializeDateInputs();
             await fetchBankHolidays();
-            // Load persisted state (if any) after bank holidays are available
             loadStateFromStorage();
             renderCalendar();
             updateSummary();
